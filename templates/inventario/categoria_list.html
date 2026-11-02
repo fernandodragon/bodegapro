@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Categorías · TechLogix{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Categorías</h1>
+    <div class="sub">Organiza tus productos por grupo</div>
+  </div>
+  {% if perms.inventario.add_categoria %}
+    <a class="btn btn-primary" href="{% url 'categoria_create' %}"><i class="bi bi-plus-lg me-1"></i>Nueva categoría</a>
+  {% endif %}
+</div>
+<div class="table-wrap">
+<div class="table-responsive">
+<table class="table align-middle">
+  <thead><tr><th>Nombre</th><th>Descripción</th><th class="text-end">Productos</th><th></th></tr></thead>
+  <tbody>
+  {% for c in object_list %}
+    <tr>
+      <td class="fw-semibold">{{ c.nombre }}</td>
+      <td class="text-muted">{{ c.descripcion|default:"—" }}</td>
+      <td class="text-end"><span class="badge-soft asis">{{ c.num_productos }}</span></td>
+      <td class="text-end text-nowrap">
+        {% if perms.inventario.change_categoria %}<a class="btn btn-sm btn-outline-primary" href="{% url 'categoria_update' c.pk %}" title="Editar"><i class="bi bi-pencil"></i></a>{% endif %}
+        {% if perms.inventario.delete_categoria %}<a class="btn btn-sm btn-outline-danger" href="{% url 'categoria_delete' c.pk %}" title="Eliminar"><i class="bi bi-trash"></i></a>{% endif %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4" class="text-center text-muted py-5"><i class="bi bi-inbox fs-3 d-block mb-1"></i>No hay categorías.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+</div>
+{% endblock %}

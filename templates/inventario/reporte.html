@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Reportes · TechLogix{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Dashboard de inventario</h1>
+    <div class="sub">Indicadores calculados en tiempo real</div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="kpi">
+    <div class="ico c1"><i class="bi bi-boxes"></i></div>
+    <div><div class="label">Productos</div><div class="value">{{ resumen.total_productos }}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="kpi">
+    <div class="ico c2"><i class="bi bi-stack"></i></div>
+    <div><div class="label">Unidades en stock</div><div class="value">{{ resumen.total_unidades }}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="kpi">
+    <div class="ico c3"><i class="bi bi-tag"></i></div>
+    <div><div class="label">Precio promedio</div><div class="value">${{ resumen.precio_promedio|default:0|floatformat:0 }}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="kpi">
+    <div class="ico c4"><i class="bi bi-cash-coin"></i></div>
+    <div><div class="label">Valor del inventario</div><div class="value">${{ resumen.valor_total|floatformat:0 }}</div></div></div></div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-7"><div class="card shadow-sm h-100"><div class="card-body">
+    <h2 class="card-title-sm">Valor de inventario por categoría (CLP)</h2>
+    <canvas id="graficoValor" height="150"></canvas>
+  </div></div></div>
+  <div class="col-lg-5"><div class="card shadow-sm h-100"><div class="card-body">
+    <h2 class="card-title-sm">Unidades por categoría</h2>
+    <canvas id="graficoUnidades" height="200"></canvas>
+  </div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7"><div class="card shadow-sm h-100"><div class="card-body">
+    <h2 class="card-title-sm">Resumen por categoría</h2>
+    <div class="table-wrap shadow-none"><div class="table-responsive"><table class="table align-middle">
+      <thead><tr><th>Categoría</th><th class="text-end">Productos</th><th class="text-end">Unidades</th><th class="text-end">Valor</th></tr></thead>
+      <tbody>
+      {% for c in por_categoria %}
+        <tr><td class="fw-semibold">{{ c.nombre }}</td><td class="text-end">{{ c.num_productos }}</td><td class="text-end">{{ c.unidades }}</td><td class="text-end">${{ c.valor|floatformat:0 }}</td></tr>
+      {% empty %}<tr><td colspan="4" class="text-muted text-center py-3">Sin datos.</td></tr>{% endfor %}
+      </tbody>
+    </table></div></div>
+    <h2 class="card-title-sm mt-4">Top 5 productos por valor</h2>
+    {% for p in top_productos %}
+      <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+        <div><span class="rank">{{ forloop.counter }}</span>{{ p.nombre }}</div>
+        <strong>${{ p.valor|floatformat:0 }}</strong>
+      </div>
+    {% empty %}<div class="text-muted">Sin datos.</div>{% endfor %}
+  </div></div></div>
+
+  <div class="col-lg-5"><div class="card shadow-sm h-100" style="border-color:#fecaca"><div class="card-body">
+    <h2 class="card-title-sm text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Stock crítico ({{ stock_critico|length }})</h2>
+    {% for p in stock_critico %}
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div>{{ p.nombre }}<br><small class="text-muted">{{ p.categoria.nombre }}</small></div>
+        <span class="badge-soft danger">{{ p.stock }} / mín. {{ p.stock_minimo }}</span>
+      </div>
+    {% empty %}
+      <div class="text-muted"><i class="bi bi-check-circle text-success me-1"></i>Todo el stock está sobre el mínimo.</div>
+    {% endfor %}
+  </div></div></div>
+</div>
+
+{{ chart_data|json_script:"chart-data" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  const datos = JSON.parse(document.getElementById('chart-data').textContent);
+  const colores = ['#4f46e5', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#8b5cf6', '#ef4444', '#84cc16'];
+  Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+  new Chart(document.getElementById('graficoValor'), {
+    type: 'bar',
+    data: { labels: datos.labels, datasets: [{ label: 'Valor (CLP)', data: datos.valores,
+      backgroundColor: colores, borderRadius: 8, maxBarThickness: 54 }] },
+    options: { plugins: { legend: { display: false } },
+      scales: { y: { grid: { color: '#eef1f6' }, ticks: { callback: v => '$' + v.toLocaleString('es-CL') } }, x: { grid: { display: false } } } }
+  });
+  new Chart(document.getElementById('graficoUnidades'), {
+    type: 'doughnut',
+    data: { labels: datos.labels, datasets: [{ data: datos.unidades, backgroundColor: colores, borderWidth: 2, borderColor: '#fff' }] },
+    options: { cutout: '62%', plugins: { legend: { position: 'bottom' } } }
+  });
+</script>
+{% endblock %}

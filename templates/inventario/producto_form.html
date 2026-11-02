@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %} producto · TechLogix{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-7">
+  <div class="page-head">
+    <div>
+      <h1>{% if object %}Editar producto{% else %}Nuevo producto{% endif %}</h1>
+      <div class="sub">Completa los datos del producto.</div>
+    </div>
+  </div>
+  <div class="card shadow-sm"><div class="card-body p-4">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <div class="d-flex gap-2 mt-2">
+        <button class="btn btn-primary px-4" type="submit"><i class="bi bi-check2 me-1"></i>Guardar</button>
+        <a class="btn btn-outline-secondary" href="{% url 'producto_list' %}">Cancelar</a>
+      </div>
+    </form>
+  </div></div>
+</div></div>
+{% endblock %}

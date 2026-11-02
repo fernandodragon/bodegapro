@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Productos · TechLogix{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Productos</h1>
+    <div class="sub">{{ page_obj.paginator.count|default:0 }} producto(s) en el inventario</div>
+  </div>
+  {% if perms.inventario.add_producto %}
+    <a class="btn btn-primary" href="{% url 'producto_create' %}"><i class="bi bi-plus-lg me-1"></i>Nuevo producto</a>
+  {% endif %}
+</div>
+
+<form method="get" class="card shadow-sm mb-3"><div class="card-body">
+  <div class="row g-2">
+    <div class="col-md-5">
+      <div class="input-group">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input class="form-control" name="q" value="{{ q }}" placeholder="Buscar por nombre o SKU">
+      </div>
+    </div>
+    <div class="col-md-4">
+      <select class="form-select" name="categoria">
+        <option value="">Todas las categorías</option>
+        {% for c in categorias %}
+          <option value="{{ c.pk }}" {% if categoria_sel == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button class="btn btn-primary flex-fill" type="submit">Filtrar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'producto_list' %}" title="Limpiar"><i class="bi bi-x-lg"></i></a>
+    </div>
+  </div>
+</div></form>
+
+<div class="table-wrap">
+<div class="table-responsive">
+<table class="table align-middle">
+  <thead>
+    <tr><th>SKU</th><th>Producto</th><th>Categoría</th><th class="text-end">Precio</th><th class="text-end">Stock</th><th>Estado</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for p in object_list %}
+    <tr>
+      <td><span class="sku">{{ p.sku }}</span></td>
+      <td class="fw-semibold">{{ p.nombre }}</td>
+      <td>{{ p.categoria.nombre }}</td>
+      <td class="text-end">${{ p.precio|floatformat:0 }}</td>
+      <td class="text-end">{{ p.stock }} {% if p.stock_critico %}<span class="badge-soft danger ms-1">Crítico</span>{% endif %}</td>
+      <td>{% if p.activo %}<span class="badge-soft ok">Activo</span>{% else %}<span class="badge-soft off">Inactivo</span>{% endif %}</td>
+      <td class="text-end text-nowrap">
+        {% if perms.inventario.change_producto %}<a class="btn btn-sm btn-outline-primary" href="{% url 'producto_update' p.pk %}" title="Editar"><i class="bi bi-pencil"></i></a>{% endif %}
+        {% if perms.inventario.delete_producto %}<a class="btn btn-sm btn-outline-danger" href="{% url 'producto_delete' p.pk %}" title="Eliminar"><i class="bi bi-trash"></i></a>{% endif %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7" class="text-center text-muted py-5"><i class="bi bi-inbox fs-3 d-block mb-1"></i>No hay productos que mostrar.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+</div>
+
+{% if is_paginated %}
+<nav class="mt-3"><ul class="pagination justify-content-center">
+  {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q|urlencode }}&categoria={{ categoria_sel|urlencode }}">Anterior</a></li>{% endif %}
+  <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+  {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q|urlencode }}&categoria={{ categoria_sel|urlencode }}">Siguiente</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+{% endblock %}
