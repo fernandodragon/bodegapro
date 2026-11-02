@@ -23,3 +23,9 @@ services:
         fromDatabase:
           name: techlogix-db
           property: connectionString
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: admin
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: admin@bodegapro.cl
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false

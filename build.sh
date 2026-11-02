@@ -8,3 +8,5 @@ python manage.py collectstatic --no-input
 python manage.py makemigrations --no-input
 python manage.py migrate --no-input
 python manage.py setup_roles
+python manage.py cargar_demo
+python manage.py createsuperuser --noinput || true
